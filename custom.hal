@@ -33,7 +33,7 @@ net spindle-speed-DAC scale.0.out => spindle.0.speed-in
 loadusr -W hal_input -KRAL DragonRise
 loadrt mux16 names=jogspeed
 addf jogspeed                 servo-thread
-net probe-in     =>  motion.probe-input
+
 
 # ---USB device jog button signals---
 
@@ -76,6 +76,7 @@ addf or2.0 servo-thread
 net probe-tip	hm2_7i76e.0.7i76.0.0.input-12 		=> or2.0.in0
 net tool-setter hm2_7i76e.0.7i76.0.0.input-10-not 	=> or2.0.in1
 net probe-in     <=  or2.0.out
+net probe-in     =>  motion.probe-input
 #-----------------------------------------------------
 # PROBE END
 #-----------------------------------------------------
