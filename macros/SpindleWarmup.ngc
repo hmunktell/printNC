@@ -1,0 +1,34 @@
+
+(Spindle Warm-up)
+(This program should be run prior to) 
+(machine use each day. ) 
+(Cycle time: 5-minutes. ) 
+
+( Wait between frequency increase in seconds. )
+#106=30 
+
+(S4500 M03 optional for lower set starting rpm)
+S6000 M03 
+G04 P#106
+S8000 M03 
+G04 P#106
+S10000 M03 
+G04 P#106
+S12000 M03 
+G04 P#106
+S14000 M03 
+G04 P#106
+S16000 M03 
+G04 P#106
+S18000 M03 
+G04 P#106
+S20000 M03 
+G04 P#106
+S22000 M03 
+G04 P#106
+S24000 M03 
+G04 P#106
+
+M05
+M2
+
