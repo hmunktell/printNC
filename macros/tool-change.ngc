@@ -29,7 +29,6 @@ O<tool-change> SUB
 ( Side effects: Sets motion mode to G1. )
 
 (------------------------------- CONFIGURATION PARAMETERS ----------------------------------------------)
-#<_UseInches> =           0     ( set to 1 to use inches here, or 0 to use millimeters; should match units on tool.tbl dimensions )
 #<_TravelZ> =          -1.0     ( machine Z coordinate for travelling, typically near max Z to avoid ever hitting the work )
 #<_TravelFeed> =     3000.0     ( feedrate used for general Z moves when avoiding G0 )
 #<_ProbeX> =          740.0     ( machine X coordinate of switch/touch-off plate )
@@ -57,7 +56,7 @@ O10 IF [#<_task> eq 1]                           ( Only run code during interpet
 
   M9                                             ( turn off coolant, will be restored on return if it was on )
   M5                                             ( turn off spindle, cannot be on during the probe )
-  G[21 - #<_UseInches>]                          ( use inches or millimeters as required here, units will be restored on return )
+  G21                                            ( use millimeters )
   #<_restorepos_x> = #<_abs_x>                    ( save restore coordinate x instead of G30.1 )
   #<_restorepos_y> = #<_abs_y>                    ( save restore coordinate y instead of G30.1 )
   #<_restorepos_z> = #<_abs_z>                    ( save restore coordinate z instead of G30.1 )
@@ -89,19 +88,8 @@ O10 IF [#<_task> eq 1]                           ( Only run code during interpet
   O200 ELSE
     G53 G1 F[#<_TravelFeed>] Z[#<_TravelZ>]      ( go to high travel level on Z )
     G53 G0 X[#<_ToolChangeX>] Y[#<_ToolChangeY>] ( nice place for changing tool )
-    O107 IF [#<_UseInches> EQ 1 ]
-      #<ToolDiamIn> = #5410
-      #<ToolDiamMM> = [ #<ToolDiamIn> * 25.4 ]
-    O107 ELSE
-      #<ToolDiamMM> = #5410
-      #<ToolDiamIn> = [ #<ToolDiamMM> / 25.4 ]
-    O107 ENDIF
-    O102 IF [ #<_current_tool> EQ 0 AND #<ToolDiamIn> EQ 0 ]
-      (MSG, Change tool then click Resume )
-    O102 ELSE
-      #<ToolDiamMM> = [ #<ToolDiamIn> * 25.4 ]
-      (DEBUG, Change to tool #<_current_tool> with diameter #<ToolDiamMM>mm, #<ToolDiamIn>in then click Resume )
-    O102 ENDIF
+    #<ToolDiamMM> = #5410
+    (DEBUG, Change to tool %d#<_current_tool> with diameter %.4f#<ToolDiamMM>mm, then click Resume )
     M0                                           ( pause execution )
    
     G53 G0 X[#<_ProbeX>] Y[#<_ProbeY>]           ( to high place directly over switch )
