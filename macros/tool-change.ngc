@@ -53,7 +53,6 @@ O10 IF [#<_task> eq 1]                           ( Only run code during interpet
 
   M6                                             ( do the normal M6 stuff )
   M70                                            ( save current modal state )
-
   M9                                             ( turn off coolant, will be restored on return if it was on )
   M5                                             ( turn off spindle, cannot be on during the probe )
   G21                                            ( use millimeters )
@@ -78,7 +77,7 @@ O10 IF [#<_task> eq 1]                           ( Only run code during interpet
     G38.2 Z[#<_ProbeRetract>*-1.25] F[#<_ProbeFeed2>]   ( trip switch very slowly )
     M9                                           ( turn off mist )
     G90                                          ( use absolute positioning )
-    #<_ToolZRef> = #5063                         ( save trip point )
+    #<_ToolZRef> = [#<_abs_z> - [#<_z> - #5063]] ( use machine coordinates stop point, compensate for extra travel from z probe trip point )
     #<_ToolZLast> = #<_ToolZRef>                 ( save last tool Z position )
     G53 G1 F[#<_TravelFeed>] Z[#<_TravelZ>]      ( return to safe level )
     G53 G0 X[#<_restorepos_x>] Y[#<_restorepos_y>] ( return to where we were in X Y)
@@ -103,7 +102,7 @@ O10 IF [#<_task> eq 1]                           ( Only run code during interpet
     G38.2 Z[#<_ProbeRetract>*-1.25] F[#<_ProbeFeed2>]   ( trip switch very slowly )
     M9                                           ( turn off mist )
     G90                                          ( use absolute positioning )
-    #<_ToolZ> = #5063                            ( save new tool length )
+    #<_ToolZ> = [#<_abs_z> - [#<_z> - #5063]]    ( use machine coordinates stop point, compensate for extra travel from z probe trip point )
     G43.1 Z[#<_ToolZ> - #<_ToolZRef>]            ( set new tool length Z offset, we do this now to show operator even though it has to be set again after M72 )
     G53 G1 F[#<_TravelFeed>] Z[#<_TravelZ>]      ( return to high travel level )
     G53 G0 X[#<_restorepos_x>] Y[#<_restorepos_y>] ( return to where we were in X Y)
