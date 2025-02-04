@@ -26,7 +26,7 @@ O<tool-change> SUB
 (     all necessary modes to ensure correct operation no matter what state the program is in when this is called. We eliminate )
 (     almost all side effects by saving and restoring the modal state. )
 (  )
-( Side effects: sets G30, sets motion mode to G1. )
+( Side effects: Sets motion mode to G1. )
 
 (------------------------------- CONFIGURATION PARAMETERS ----------------------------------------------)
 #<_UseInches> =           0     ( set to 1 to use inches here, or 0 to use millimeters; should match units on tool.tbl dimensions )
