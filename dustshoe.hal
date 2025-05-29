@@ -1,0 +1,18 @@
+addf scaleDustshoe servo-thread
+addf dustmux servo-thread
+
+# Scale Z motion by -1
+setp scaleDustshoe.gain -1
+net zw-pos-cmd             axis.z.pos-cmd  => scaleDustshoe.in
+
+# 0 = park, 1 = follow
+net dustshoe-mode dustmux.sel
+
+# Input 0 = parked value (set manually)
+setp dustmux.in0 -2    # or whatever the W "park" value is in machine coordinates
+
+# input 1 = follow mode
+net dustshoe-follow-cmd   scaleDustshoe.out           => dustmux.in1  
+
+# Connect mux output to W command
+#net w-cmd                 dustmux.out            => axis.4.motor-pos-cmd

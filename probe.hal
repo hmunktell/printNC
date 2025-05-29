@@ -1,0 +1,11 @@
+#-----------------------------------------------------
+# PROBE
+#-----------------------------------------------------
+addf orProbe servo-thread
+net probe-tip	    hm2_7i76e.0.7i76.0.0.input-12 		  => orProbe.in0
+net tool-setter   hm2_7i76e.0.7i76.0.0.input-10-not 	=> orProbe.in1
+net probe-in     <=  orProbe.out
+net probe-in     =>  motion.probe-input
+#-----------------------------------------------------
+# PROBE END
+#-----------------------------------------------------
