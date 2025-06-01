@@ -1,18 +1,77 @@
-addf scaleDustshoe servo-thread
-addf dustmux servo-thread
+addf joint_3_following_pos_cmd_calc          servo-thread
+addf joint_4_limit  servo-thread
+addf joint_3_following_motor_pos_cmd_calc servo-thread
+addf joint_4_control_mux servo-thread
+addf joint_4_feedback_mux servo-thread
+
+unlinkp joint.4.motor-pos-cmd
+unlinkp joint.4.motor-pos-fb
+
+# The position command is joint4 minus an offset to the surface, plus the height of the workpiece
+setp joint_3_following_pos_cmd_calc.gain0 1.0
+setp joint_3_following_pos_cmd_calc.gain1 -1.0
+setp joint_3_following_pos_cmd_calc.offset -225.0 # -(W-to-Z offset + Z-to-Table offset)
+net w_axis_work_offset => joint_3_following_pos_cmd_calc.in0
+net joint_3_pos_cmd joint_3_following_pos_cmd_calc.in1 <= joint.3.pos-cmd
+net joint_3_following_pos_cmd_calc_out <= joint_3_following_pos_cmd_calc.out
+
+# Limit where joint_3_pos_cmd can go (MIN/MAX limits from ini file)
+setp joint_4_limit.min [JOINT_4]MIN_LIMIT
+setp joint_4_limit.max [JOINT_4]MAX_LIMIT
+net joint_3_following_pos_cmd_calc_out => joint_4_limit.in
+net joint_3_following_pos_cmd_calc_out_limited <= joint_4_limit.out
+
+# Convert joint_3_pos_cmd to joint_3_motor_pos_cmd
+setp joint_3_following_motor_pos_cmd_calc.gain0 1.0
+setp joint_3_following_motor_pos_cmd_calc.gain1 1.0
+net joint_3_following_pos_cmd_calc_out_limited => joint_3_following_motor_pos_cmd_calc.in0
+net joint_4_motor_offset joint_3_following_motor_pos_cmd_calc.in1 <= joint.4.motor-offset
+net joint_3_following_motor_pos_cmd_calc_out <= joint_3_following_motor_pos_cmd_calc.out
+
+# Feed the set work offset to NGC code during shoe extend
+net w_axis_work_offset => motion.analog-in-00
+net joint_4_motor_pos_cmd <= joint.4.motor-pos-cmd
+net coolant-mist => joint_4_control_mux.sel0
+net joint_4_homed joint_4_control_mux.sel1 <= joint.4.homed
+net joint_4_motor_pos_cmd => joint_4_control_mux.in0 # Shoe is off and we're not homed
+net joint_4_motor_pos_cmd => joint_4_control_mux.in1 # Shoe is on but we're not homed
+net joint_4_motor_offset => joint_4_control_mux.in2 # Shoe is off and we're homed, move to home (W0)
+net joint_3_following_motor_pos_cmd_calc_out => joint_4_control_mux.in3 # Shoe is on and we're homed
+net w-pos-cmd <= joint_4_control_mux.out
+net w-vel-cmd <= joint.4.vel-cmd # Only used for debugging
+net w-output => hm2_7i76e.0.stepgen.04.velocity-cmd
+
+# Mux the feedback. Short it if the PID is not in control.
+net w-pos-fb <= hm2_7i76e.0.stepgen.04.position-fb
+
+# Short the feedback once we're homed.
+net joint_4_homed => joint_4_feedback_mux.sel
+net w-pos-fb => joint_4_feedback_mux.in0
+net joint_4_motor_pos_cmd => joint_4_feedback_mux.in1
+net joint_4_motor_pos_fb joint_4_feedback_mux.out => joint.4.motor-pos-fb
+
+
+unlinkp joint_4_control_mux.sel0
+net dustONOFF motion.digital-out-00 => joint_4_control_mux.sel0
+
+
+
+
+#addf scaleDustshoe servo-thread
+#addf dustmux servo-thread
 
 # Scale Z motion by -1
-setp scaleDustshoe.gain -1
-net zw-pos-cmd             axis.z.pos-cmd  => scaleDustshoe.in
+#setp scaleDustshoe.gain -1
+#net zw-pos-cmd             axis.z.pos-cmd  => scaleDustshoe.in
 
 # 0 = park, 1 = follow
-net dustshoe-mode dustmux.sel
+#net dustshoe-mode dustmux.sel
 
 # Input 0 = parked value (set manually)
-setp dustmux.in0 -2    # or whatever the W "park" value is in machine coordinates
+#setp dustmux.in0 -2    # or whatever the W "park" value is in machine coordinates
 
 # input 1 = follow mode
-net dustshoe-follow-cmd   scaleDustshoe.out           => dustmux.in1  
+#net dustshoe-follow-cmd   scaleDustshoe.out           => dustmux.in1  
 
 # Connect mux output to W command
 #net w-cmd                 dustmux.out            => axis.4.motor-pos-cmd
