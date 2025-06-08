@@ -10,13 +10,6 @@ loadrt hm2_eth board_ip="10.10.10.10" config="num_encoders=0 num_pwmgens=0 num_s
 setp    hm2_7i76e.0.watchdog.timeout_ns 5000000
 
 loadrt pid names=pid.x,pid.y,pid.y2,pid.z,pid.s,pid.w
-loadrt mux2 names=dustmux,joint_4_feedback_mux
-loadrt mux4 names=joint_4_control_mux
-loadrt mux16 names=jogspeed
-loadrt or2 names=orProbe
-loadrt scale names=scaleVFD,scaleDustshoe
-loadrt sum2 names=joint_3_following_pos_cmd_calc,joint_3_following_motor_pos_cmd_calc
-loadrt limit1 names=joint_4_limit
 
 addf hm2_7i76e.0.read          servo-thread
 addf motion-command-handler   servo-thread
