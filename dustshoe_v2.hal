@@ -1,0 +1,78 @@
+# https://drive.google.com/file/d/1FjmJV9dt9sZR_mFJPYskUDsgHY4NgUDv/view?usp=drive_link
+
+loadrt sum2 names=J4.J3-follow-calc-sum2,J4.motor-pos-calc-sum2
+loadrt mux2 names=DS.is-following-mux2,DS.is-activated-mux2,J4.is-homed-mux2,J4.cmd-fb-short-mux2
+loadrt and2 names=J4.cmd-fb-short-and2
+
+loadrt limit3 names=J4.limit
+
+addf J4.J3-follow-calc-sum2		servo-thread
+addf J4.motor-pos-calc-sum2		servo-thread
+addf DS.is-following-mux2		servo-thread
+addf DS.is-activated-mux2		servo-thread
+addf J4.is-homed-mux2			servo-thread
+addf J4.cmd-fb-short-mux2		servo-thread
+addf J4.cmd-fb-short-and2   servo-thread
+addf J4.limit					servo-thread
+
+unlinkp joint.4.motor-pos-cmd
+unlinkp joint.4.motor-pos-fb
+
+# Calculate follow position for joint4
+setp J4.J3-follow-calc-sum2.gain0 1
+setp J4.J3-follow-calc-sum2.gain1 -1
+setp J4.J3-follow-calc-sum2.offset -100
+net w_axis_work_offset	=> J4.J3-follow-calc-sum2.in0
+net joint_3_pos_cmd 	=> J4.J3-follow-calc-sum2.in1
+net joint_3_pos_cmd <= joint.3.pos-cmd
+net DS:follow-calc 	<= J4.J3-follow-calc-sum2.out
+
+# Park dustshoe high or follow joint3
+net DS:is-following 	=> DS.is-following-mux2.sel
+net DS:park-high-pos	=> DS.is-following-mux2.in0
+net DS:follow-calc		=> DS.is-following-mux2.in1
+net J4:follow-pos		<= DS.is-following-mux2.out
+
+# Limit pos, velocity and acc of joint 4
+setp J4.limit.min -100
+setp J4.limit.max 0
+setp J4.limit.maxv 50
+setp J4.limit.maxa 750
+net J4:follow-pos			=> J4.limit.in
+net J4:follow-pos-limited 	<= J4.limit.out
+
+# Add joint 4 motor offset from homing 
+setp J4.motor-pos-calc-sum2.gain0 1
+setp J4.motor-pos-calc-sum2.gain1 1
+setp J4.motor-pos-calc-sum2.offset 0
+net J4:follow-pos-limited 		=> J4.motor-pos-calc-sum2.in0
+net J4:motor-offset		 		=> J4.motor-pos-calc-sum2.in1
+net J4:follow-motor-pos-cmd 	<= J4.motor-pos-calc-sum2.out
+
+# Is dust shoe activated? Other follow joint 4 jogging
+net DS:activated				=> DS.is-activated-mux2.sel
+net J4:motor-pos-cmd			=> DS.is-activated-mux2.in0
+net J4:follow-motor-pos-cmd		=> DS.is-activated-mux2.in1
+net DS:pos-cmd					<= DS.is-activated-mux2.out
+
+# 
+net w-is-homed			=> J4.is-homed-mux2.sel
+net J4:motor-pos-cmd	=> J4.is-homed-mux2.in0
+net DS:pos-cmd			=> J4.is-homed-mux2.in1
+net w-pos-cmd			<= J4.is-homed-mux2.out
+
+# If J4 is both homed and DS is activated, short motion feedback
+net	w-is-homed		=> J4.cmd-fb-short-and2.in0
+net	DS:activated	=> J4.cmd-fb-short-and2.in1
+net	J4:do-fb-short	<= J4.cmd-fb-short-and2.out
+
+# Short feedback
+net J4:do-fb-short		=> J4.cmd-fb-short-mux2.sel
+net w-pos-fb			=> J4.cmd-fb-short-mux2.in0
+net J4:motor-pos-cmd	=> J4.cmd-fb-short-mux2.in1
+net J4:motor-pos-fb		<= J4.cmd-fb-short-mux2.out
+
+net J4:motor-pos-fb		=> joint.4.motor-pos-fb
+net J4:motor-pos-cmd	<= joint.4.motor-pos-cmd
+net J4:motor-offset		<= joint.4.motor-offset
+
