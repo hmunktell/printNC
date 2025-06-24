@@ -1,6 +1,6 @@
 # https://drive.google.com/file/d/1FjmJV9dt9sZR_mFJPYskUDsgHY4NgUDv/view?usp=drive_link
 
-loadrt sum2 names=J4.J3-follow-calc-sum2,J4.motor-pos-calc-sum2
+loadrt sum2 names=J4.J3-follow-calc-sum2,J4.motor-pos-calc-sum2,J4.calc-offset_sum2
 loadrt mux2 names=DS.is-following-mux2,DS.is-activated-mux2,J4.is-homed-mux2,J4.cmd-fb-short-mux2
 loadrt and2 names=J4.cmd-fb-short-and2
 
@@ -8,6 +8,7 @@ loadrt limit3 names=J4.limit
 
 addf J4.J3-follow-calc-sum2		servo-thread
 addf J4.motor-pos-calc-sum2		servo-thread
+addf J4.calc-offset_sum2      servo-thread
 addf DS.is-following-mux2		servo-thread
 addf DS.is-activated-mux2		servo-thread
 addf J4.is-homed-mux2			servo-thread
@@ -18,10 +19,20 @@ addf J4.limit					servo-thread
 unlinkp joint.4.motor-pos-cmd
 unlinkp joint.4.motor-pos-fb
 
+net axis-z-cmd  <= axis.z.pos-cmd
+net axis-w-cmd  <= axis.w.pos-cmd
+
+# Calculate offset value to later store to w_axis_work_offset
+setp J4.calc-offset_sum2.gain0 1
+setp J4.calc-offset_sum2.gain1 1
+setp J4.calc-offset_sum2.offset 145
+net axis-z-cmd   => J4.calc-offset_sum2.in0
+net axis-w-cmd  => J4.calc-offset_sum2.in1
+
 # Calculate follow position for joint4
 setp J4.J3-follow-calc-sum2.gain0 1
 setp J4.J3-follow-calc-sum2.gain1 -1
-setp J4.J3-follow-calc-sum2.offset -100
+setp J4.J3-follow-calc-sum2.offset -145
 net w_axis_work_offset	=> J4.J3-follow-calc-sum2.in0
 net joint_3_pos_cmd 	=> J4.J3-follow-calc-sum2.in1
 net joint_3_pos_cmd <= joint.3.pos-cmd
