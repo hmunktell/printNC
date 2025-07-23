@@ -16,7 +16,7 @@ unlinkp joint.4.motor-pos-fb
 # The position command is joint4 minus an offset to the surface, plus the height of the workpiece
 setp joint_3_following_pos_cmd_calc.gain0 1.0
 setp joint_3_following_pos_cmd_calc.gain1 -1.0
-setp joint_3_following_pos_cmd_calc.offset -145.0 # -(W-to-Z offset + Z-to-Table offset)
+setp joint_3_following_pos_cmd_calc.offset -152.0 # -(W-to-Z offset + Z-to-Table offset)
 net w_axis_work_offset => joint_3_following_pos_cmd_calc.in0
 net joint_3_pos_cmd joint_3_following_pos_cmd_calc.in1 <= joint.3.pos-cmd
 net joint_3_following_pos_cmd_calc_out <= joint_3_following_pos_cmd_calc.out

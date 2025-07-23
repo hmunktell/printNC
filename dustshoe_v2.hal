@@ -4,6 +4,7 @@ loadrt sum2 names=J4.J3-follow-calc-sum2,J4.motor-pos-calc-sum2,J4.calc-offset_s
 loadrt mux2 names=DS.is-following-mux2,DS.is-activated-mux2,J4.is-homed-mux2,J4.cmd-fb-short-mux2
 loadrt and2 names=J4.cmd-fb-short-and2
 
+
 loadrt limit3 names=J4.limit
 
 addf J4.J3-follow-calc-sum2		servo-thread
@@ -25,18 +26,19 @@ net axis-w-cmd  <= axis.w.pos-cmd
 # Calculate offset value to later store to w_axis_work_offset
 setp J4.calc-offset_sum2.gain0 1
 setp J4.calc-offset_sum2.gain1 1
-setp J4.calc-offset_sum2.offset 145
+setp J4.calc-offset_sum2.offset [DUSTSHOE]BASE_OFFSET
 net axis-z-cmd   => J4.calc-offset_sum2.in0
 net axis-w-cmd  => J4.calc-offset_sum2.in1
 
 # Calculate follow position for joint4
 setp J4.J3-follow-calc-sum2.gain0 1
 setp J4.J3-follow-calc-sum2.gain1 -1
-setp J4.J3-follow-calc-sum2.offset -145
+setp J4.J3-follow-calc-sum2.offset -[DUSTSHOE]BASE_OFFSET
 net w_axis_work_offset	=> J4.J3-follow-calc-sum2.in0
 net joint_3_pos_cmd 	=> J4.J3-follow-calc-sum2.in1
 net joint_3_pos_cmd <= joint.3.pos-cmd
 net DS:follow-calc 	<= J4.J3-follow-calc-sum2.out
+sets w_axis_work_offset [DUSTSHOE]BASE_OFFSET
 
 # Park dustshoe high or follow joint3
 net DS:is-following 	=> DS.is-following-mux2.sel
@@ -45,7 +47,7 @@ net DS:follow-calc		=> DS.is-following-mux2.in1
 net J4:follow-pos		<= DS.is-following-mux2.out
 
 # Limit pos, velocity and acc of joint 4
-setp J4.limit.min -100
+setp J4.limit.min [DUSTSHOE]MIN_LIMIT
 setp J4.limit.max 0
 setp J4.limit.maxv 50
 setp J4.limit.maxa 750
