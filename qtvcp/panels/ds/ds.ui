@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>180</width>
+    <height>173</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QWidget" name="gridLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>166</width>
+      <height>121</height>
+     </rect>
+    </property>
+    <layout class="QGridLayout" name="gridLayout">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <item row="3" column="0">
+      <widget class="PushButton" name="track">
+       <property name="text">
+        <string>Track</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="indicator_option" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="indicator_HAL_pin_option" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="checked_state_text_option" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="python_command_option" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="shape_option" stdset="0">
+        <number>1</number>
+       </property>
+       <property name="right_edge_offset" stdset="0">
+        <number>2</number>
+       </property>
+       <property name="top_edge_offset" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="PushButton" name="enable">
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Enable</string>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <property name="indicator_option" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="indicator_HAL_pin_option" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="indicator_status_option" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="checked_state_text_option" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="on_color" stdset="0">
+        <color>
+         <red>51</red>
+         <green>209</green>
+         <blue>122</blue>
+        </color>
+       </property>
+       <property name="shape_option" stdset="0">
+        <number>1</number>
+       </property>
+       <property name="right_edge_offset" stdset="0">
+        <number>2</number>
+       </property>
+       <property name="top_edge_offset" stdset="0">
+        <number>2</number>
+       </property>
+       <property name="true_state_string" stdset="0">
+        <string>Enabled</string>
+       </property>
+       <property name="false_state_string" stdset="0">
+        <string>Enable</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="PushButton" name="park">
+       <property name="text">
+        <string>Park</string>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <property name="autoExclusive">
+        <bool>false</bool>
+       </property>
+       <property name="indicator_option" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="indicator_HAL_pin_option" stdset="0">
+        <bool>true</bool>
+       </property>
+       <property name="indicator_status_option" stdset="0">
+        <bool>false</bool>
+       </property>
+       <property name="on_color" stdset="0">
+        <color>
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+       </property>
+       <property name="shape_option" stdset="0">
+        <number>1</number>
+       </property>
+       <property name="off_color" stdset="0">
+        <color>
+         <red>255</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+       </property>
+       <property name="right_edge_offset" stdset="0">
+        <number>2</number>
+       </property>
+       <property name="top_edge_offset" stdset="0">
+        <number>2</number>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="DoubleScale" name="posTrack">
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::PlusMinus</enum>
+       </property>
+       <property name="accelerated">
+        <bool>true</bool>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="minimum">
+        <double>0.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>152.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.500000000000000</double>
+       </property>
+       <property name="stepType">
+        <enum>QAbstractSpinBox::DefaultStepType</enum>
+       </property>
+       <property name="value">
+        <double>152.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="DoubleScale" name="posPark">
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::PlusMinus</enum>
+       </property>
+       <property name="accelerated">
+        <bool>true</bool>
+       </property>
+       <property name="keyboardTracking">
+        <bool>false</bool>
+       </property>
+       <property name="decimals">
+        <number>1</number>
+       </property>
+       <property name="minimum">
+        <double>-150.000000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>0.000000000000000</double>
+       </property>
+       <property name="value">
+        <double>0.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>180</width>
+     <height>23</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>IndicatedPushButton</class>
+   <extends>QPushButton</extends>
+   <header>qtvcp.widgets.simple_widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>PushButton</class>
+   <extends>IndicatedPushButton</extends>
+   <header>qtvcp.widgets.simple_widgets</header>
+  </customwidget>
+  <customwidget>
+   <class>DoubleScale</class>
+   <extends>QDoubleSpinBox</extends>
+   <header>qtvcp.widgets.simple_widgets</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+ <slots>
+  <slot>park_button()</slot>
+ </slots>
+</ui>

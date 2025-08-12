@@ -1,34 +1,22 @@
 # https://drive.google.com/file/d/1FjmJV9dt9sZR_mFJPYskUDsgHY4NgUDv/view?usp=drive_link
+loadusr -Wn ds qtvcp -a ds
 
-loadrt sum2 names=J4.J3-follow-calc-sum2,J4.motor-pos-calc-sum2,J4.calc-offset_sum2
-loadrt mux2 names=DS.is-following-mux2,DS.is-activated-mux2,J4.is-homed-mux2,J4.cmd-fb-short-mux2
-loadrt and2 names=J4.cmd-fb-short-and2
-
-
-loadrt limit3 names=J4.limit
+loadrt sum2 names=J4.J3-follow-calc-sum2
+loadrt mux2 names=DS.is-following-mux2
+loadrt and2 names=J4.cmd-follow-and2
+loadrt limit1 names=J4.limit1
+loadrt limit3 names=J4.limit3
+loadrt near names=DS.check-near
 
 addf J4.J3-follow-calc-sum2		servo-thread
-addf J4.motor-pos-calc-sum2		servo-thread
-addf J4.calc-offset_sum2      servo-thread
 addf DS.is-following-mux2		servo-thread
-addf DS.is-activated-mux2		servo-thread
-addf J4.is-homed-mux2			servo-thread
-addf J4.cmd-fb-short-mux2		servo-thread
-addf J4.cmd-fb-short-and2   servo-thread
-addf J4.limit					servo-thread
+addf J4.limit1					servo-thread
+addf J4.limit3					servo-thread
+addf J4.cmd-follow-and2         servo-thread
+addf DS.check-near              servo-thread
 
 unlinkp joint.4.motor-pos-cmd
-unlinkp joint.4.motor-pos-fb
-
-net axis-z-cmd  <= axis.z.pos-cmd
-net axis-w-cmd  <= axis.w.pos-cmd
-
-# Calculate offset value to later store to w_axis_work_offset
-setp J4.calc-offset_sum2.gain0 1
-setp J4.calc-offset_sum2.gain1 1
-setp J4.calc-offset_sum2.offset [DUSTSHOE]BASE_OFFSET
-net axis-z-cmd   => J4.calc-offset_sum2.in0
-net axis-w-cmd  => J4.calc-offset_sum2.in1
+unlinkp pid.w.command
 
 # Calculate follow position for joint4
 setp J4.J3-follow-calc-sum2.gain0 1
@@ -38,7 +26,12 @@ net w_axis_work_offset	=> J4.J3-follow-calc-sum2.in0
 net joint_3_pos_cmd 	=> J4.J3-follow-calc-sum2.in1
 net joint_3_pos_cmd <= joint.3.pos-cmd
 net DS:follow-calc 	<= J4.J3-follow-calc-sum2.out
-sets w_axis_work_offset [DUSTSHOE]BASE_OFFSET
+#sets w_axis_work_offset [DUSTSHOE]BASE_OFFSET
+
+# Make sure to only follow if DS is activated
+net DS:activated => J4.cmd-follow-and2.in0
+net DS:cmd-follow => J4.cmd-follow-and2.in1
+net DS:is-following <= J4.cmd-follow-and2.out
 
 # Park dustshoe high or follow joint3
 net DS:is-following 	=> DS.is-following-mux2.sel
@@ -46,46 +39,91 @@ net DS:park-high-pos	=> DS.is-following-mux2.in0
 net DS:follow-calc		=> DS.is-following-mux2.in1
 net J4:follow-pos		<= DS.is-following-mux2.out
 
+# Limit pos of joint 4
+setp J4.limit1.min [DUSTSHOE]MIN_LIMIT
+setp J4.limit1.max 0
+net J4:follow-pos			=> J4.limit1.in
+net J4:follow-pos-lim       <= J4.limit1.out
+
 # Limit pos, velocity and acc of joint 4
-setp J4.limit.min [DUSTSHOE]MIN_LIMIT
-setp J4.limit.max 0
-setp J4.limit.maxv 50
-setp J4.limit.maxa 750
-net J4:follow-pos			=> J4.limit.in
-net J4:follow-pos-limited 	<= J4.limit.out
+setp J4.limit3.min [DUSTSHOE]MIN_LIMIT
+setp J4.limit3.max 0
+setp J4.limit3.maxv 50
+setp J4.limit3.maxa 750
+net J4:follow-pos-lim	=> J4.limit3.in
+net w-pos-cmd 	        <= J4.limit3.out
 
-# Add joint 4 motor offset from homing 
-setp J4.motor-pos-calc-sum2.gain0 1
-setp J4.motor-pos-calc-sum2.gain1 1
-setp J4.motor-pos-calc-sum2.offset 0
-net J4:follow-pos-limited 		=> J4.motor-pos-calc-sum2.in0
-net J4:motor-offset		 		=> J4.motor-pos-calc-sum2.in1
-net J4:follow-motor-pos-cmd 	<= J4.motor-pos-calc-sum2.out
+net w-pos-cmd => joint.4.posthome-cmd
 
-# Is dust shoe activated? Other follow joint 4 jogging
-net DS:activated				=> DS.is-activated-mux2.sel
-net J4:motor-pos-cmd			=> DS.is-activated-mux2.in0
-net J4:follow-motor-pos-cmd		=> DS.is-activated-mux2.in1
-net DS:pos-cmd					<= DS.is-activated-mux2.out
+net J4:motor-pos-cmd <= joint.4.motor-pos-cmd
+net J4:motor-pos-cmd => pid.w.command
 
-# 
-net w-is-homed			=> J4.is-homed-mux2.sel
-net J4:motor-pos-cmd	=> J4.is-homed-mux2.in0
-net DS:pos-cmd			=> J4.is-homed-mux2.in1
-net w-pos-cmd			<= J4.is-homed-mux2.out
+# Check if dust shoe is near commanded position, used by tool-change.ngc
+setp DS.check-near.difference 1
+net J4:follow-pos-lim => DS.check-near.in1
+net w-act-pos <= joint.4.pos-fb
+net w-act-pos => DS.check-near.in2
+net DS.is-near <= DS.check-near.out
+net DS.is-near => motion.digital-in-00
 
-# If J4 is both homed and DS is activated, short motion feedback
-net	w-is-homed		=> J4.cmd-fb-short-and2.in0
-net	DS:activated	=> J4.cmd-fb-short-and2.in1
-net	J4:do-fb-short	<= J4.cmd-fb-short-and2.out
+loadrt edge names=DS.edge-follow-qt,DS.edge-follow-mot,DS.edge-park-qt,DS.edge-park-mot
+addf DS.edge-follow-qt servo-thread 
+addf DS.edge-follow-mot servo-thread 
+addf DS.edge-park-qt servo-thread 
+addf DS.edge-park-mot servo-thread 
 
-# Short feedback
-net J4:do-fb-short		=> J4.cmd-fb-short-mux2.sel
-net w-pos-fb			=> J4.cmd-fb-short-mux2.in0
-net J4:motor-pos-cmd	=> J4.cmd-fb-short-mux2.in1
-net J4:motor-pos-fb		<= J4.cmd-fb-short-mux2.out
+loadrt or2 names=DS.edge-or-follow,DS.edge-or-park
+addf DS.edge-or-follow servo-thread
+addf DS.edge-or-park servo-thread
 
-net J4:motor-pos-fb		=> joint.4.motor-pos-fb
-net J4:motor-pos-cmd	<= joint.4.motor-pos-cmd
-net J4:motor-offset		<= joint.4.motor-offset
+loadrt flipflop names=DS.follow-flipflop
+addf DS.follow-flipflop servo-thread
 
+setp DS.edge-follow-qt.in-edge FALSE
+setp DS.edge-follow-mot.in-edge FALSE
+setp DS.edge-park-qt.in-edge FALSE
+setp DS.edge-park-mot.in-edge TRUE
+
+setp DS.edge-follow-qt.out-width-ns 100000000
+setp DS.edge-follow-mot.out-width-ns 100000000
+setp DS.edge-park-qt.out-width-ns 100000000
+setp DS.edge-park-mot.out-width-ns 100000000
+
+net track-sig-qt <= ds.track
+net track-sig-qt => DS.edge-follow-qt.in
+
+net track-sig-mot <= motion.digital-out-00
+net track-sig-mot => DS.edge-follow-mot.in
+net track-sig-mot => DS.edge-park-mot.in
+
+net park-sig-qt <= ds.park
+net park-sig-qt => DS.edge-park-qt.in
+
+net track-sig-qt-pulse <= DS.edge-follow-qt.out
+net track-sig-qt-pulse => DS.edge-or-follow.in0
+
+net track-sig-mot-pulse <= DS.edge-follow-mot.out
+net track-sig-mot-pulse => DS.edge-or-follow.in1
+
+net park-sig-qt-pulse <= DS.edge-park-qt.out
+net park-sig-qt-pulse => DS.edge-or-park.in0
+
+net park-sig-mot-pulse <= DS.edge-park-mot.out
+net park-sig-mot-pulse => DS.edge-or-park.in1
+
+net track-sig-pulse <= DS.edge-or-follow.out
+net track-sig-pulse => DS.follow-flipflop.set
+
+net park-sig-pulse <= DS.edge-or-park.out
+net park-sig-pulse => DS.follow-flipflop.reset
+
+net DS:cmd-follow <= DS.follow-flipflop.out 
+net DS:cmd-follow => ds.track-led
+net DS:cmd-follow => ds.park-led
+
+net DS:activated <= ds.enable
+net DS:activated => ds.enable-led
+#net DS:is-following <= DS.follow-flipflop.out
+
+net w_axis_work_offset <= ds.posTrack-f
+net DS:park-high-pos <= ds.posPark-f
