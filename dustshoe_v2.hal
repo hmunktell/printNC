@@ -26,7 +26,6 @@ net w_axis_work_offset	=> J4.J3-follow-calc-sum2.in0
 net joint_3_pos_cmd 	=> J4.J3-follow-calc-sum2.in1
 net joint_3_pos_cmd <= joint.3.pos-cmd
 net DS:follow-calc 	<= J4.J3-follow-calc-sum2.out
-#sets w_axis_work_offset [DUSTSHOE]BASE_OFFSET
 
 # Make sure to only follow if DS is activated
 net DS:activated => J4.cmd-follow-and2.in0
@@ -41,15 +40,15 @@ net J4:follow-pos		<= DS.is-following-mux2.out
 
 # Limit pos of joint 4
 setp J4.limit1.min [DUSTSHOE]MIN_LIMIT
-setp J4.limit1.max 0
+setp J4.limit1.max [DUSTSHOE]MAX_LIMIT
 net J4:follow-pos			=> J4.limit1.in
 net J4:follow-pos-lim       <= J4.limit1.out
 
 # Limit pos, velocity and acc of joint 4
 setp J4.limit3.min [DUSTSHOE]MIN_LIMIT
-setp J4.limit3.max 0
-setp J4.limit3.maxv 50
-setp J4.limit3.maxa 750
+setp J4.limit3.max [DUSTSHOE]MAX_LIMIT
+setp J4.limit3.maxv [DUSTSHOE]MAX_V
+setp J4.limit3.maxa [DUSTSHOE]MAX_A
 net J4:follow-pos-lim	=> J4.limit3.in
 net w-pos-cmd 	        <= J4.limit3.out
 
@@ -59,7 +58,7 @@ net J4:motor-pos-cmd <= joint.4.motor-pos-cmd
 net J4:motor-pos-cmd => pid.w.command
 
 # Check if dust shoe is near commanded position, used by tool-change.ngc
-setp DS.check-near.difference 1
+setp DS.check-near.difference [DUSTSHOE]NEAR
 net J4:follow-pos-lim => DS.check-near.in1
 net w-act-pos <= joint.4.pos-fb
 net w-act-pos => DS.check-near.in2
@@ -123,7 +122,6 @@ net DS:cmd-follow => ds.park-led
 
 net DS:activated <= ds.enable
 net DS:activated => ds.enable-led
-#net DS:is-following <= DS.follow-flipflop.out
 
 net w_axis_work_offset <= ds.posTrack-f
 net DS:park-high-pos <= ds.posPark-f
