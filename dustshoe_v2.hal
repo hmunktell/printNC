@@ -122,6 +122,7 @@ net DS:cmd-follow => ds.park-led
 
 net DS:activated <= ds.enable
 net DS:activated => ds.enable-led
+net DS:activated => motion.digital-in-01
 
 net w_axis_work_offset <= ds.posTrack-f
 net DS:park-high-pos <= ds.posPark-f

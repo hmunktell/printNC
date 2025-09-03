@@ -85,6 +85,11 @@ O10 IF [#<_task> eq 1]                           ( Only run code during interpet
     #<_ToolZRef> = [#<_abs_z> - [#<_z> - #5063]] ( use machine coordinates stop point, compensate for extra travel from z probe trip point )
     #<_ToolZLast> = #<_ToolZRef>                 ( save last tool Z position )
     G53 G1 F[#<_TravelFeed>] Z[#<_TravelZ>]      ( return to safe level )
+    M66 P1 L0                                    ( get status of motion.digital-in-01 pin, TRUE if dust shoe is activated )
+    O102 IF [ #5399 EQ 1 ]                       ( Dust shoe is activated, pause and wait for reattach and resume )
+      (DEBUG, Reattach dust shoe, then click Resume )
+      M0                                         ( pause execution )
+    O102 ENDIF
     G53 G0 X[#<_restorepos_x>] Y[#<_restorepos_y>] ( return to where we were in X Y)
     G53 G1 F[#<_TravelFeed>] Z[#<_restorepos_z>]  ( return to where we were in Z )
     M64 P0                                       ( Track with dust shoe )
@@ -111,6 +116,11 @@ O10 IF [#<_task> eq 1]                           ( Only run code during interpet
     #<_ToolZ> = [#<_abs_z> - [#<_z> - #5063]]    ( use machine coordinates stop point, compensate for extra travel from z probe trip point )
     G43.1 Z[#<_ToolZ> - #<_ToolZRef>]            ( set new tool length Z offset, we do this now to show operator even though it has to be set again after M72 )
     G53 G1 F[#<_TravelFeed>] Z[#<_TravelZ>]      ( return to high travel level )
+    M66 P1 L0                                    ( get status of motion.digital-in-01 pin, TRUE if dust shoe is activated )
+    O104 IF [ #5399 EQ 1 ]                       ( Dust shoe is activated, pause and wait for reattach and resume )
+      (DEBUG, Reattach dust shoe, then click Resume )
+      M0                                         ( pause execution )
+    O104 ENDIF      
     G53 G0 X[#<_restorepos_x>] Y[#<_restorepos_y>] ( return to where we were in X Y)
     G53 G1 F[#<_TravelFeed>] Z[#<_restorepos_z> - #<_ToolZLast> + #<_ToolZ>]   ( return to where we were in Z, ajusting for tool length change )
     #<_ToolZLast> = #<_ToolZ>                    ( save last tool length )
